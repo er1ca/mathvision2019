@@ -140,20 +140,51 @@ bool PolygonDemo::ptInPolygon(const std::vector<cv::Point>& vtx, Point pt)
 // return homography type: NORMAL, CONCAVE, TWIST, REFLECTION, CONCAVE_REFLECTION
 int PolygonDemo::classifyHomography(const std::vector<cv::Point>& pts1, const std::vector<cv::Point>& pts2)
 {
-	//const std::vector<cv::Point>& crossV(0,0);
+	int Flag = 0;
+	int nMinus = 0;
+	std::vector<cv::Point>& v();
+
 	if (pts1.size() != 4 || pts2.size() != 4) return -1;
 	else {
-		for (int i = 0; i < 3; i++){
-			//crossV += pts2[i].cross(pts2[i + 1]);
-			//printf("pts1[%d].x: %d\t", i, pts1[i].x);
-			//printf("pts1[%d].y: %d\r\n", i, pts1[i].y);
-			//printf("pts2[%d].x: %d\t", i, pts2[i].x);
-			//printf("pts2[%d].y: %d\r\n", i, pts2[i].y);
-			//printf("%d\r\n", crossV);
+		Point v[4];
+		int c[4];
+		for (int i = 0; i < 4; i++){
+			if (i == 3){
+				v[i].x = pts2[3].x - pts2[0].x;
+				v[i].y = pts2[3].y - pts2[0].y;
+			}
+			else{
+				v[i].x = pts2[i + 1].x - pts2[i].x;
+				v[i].y = pts2[i + 1].y - pts2[i].y;
+			}
 		}
+		for (int i = 0; i < 4; i++){
+			if (i == 3){
+				c[i] = v[3].cross(v[0])*0.01;
+			}
+			else{
+				c[i] = v[i].cross(v[i + 1])*0.01;
+			}
+
+			if (c[i] < 0) nMinus++;
+			printf("c[%d]=%d\r\n",i,c[i]);
+		}
+		
+		if (nMinus == 1)
+			Flag = CONCAVE_REFLECTION;
+		else if (nMinus == 3)
+			Flag = CONCAVE;
+		else {
+			if (c[0]>0 && c[1]>0) // CCW
+				Flag = REFLECTION;
+			else if (c[0]<0 && c[1]<0) //CW
+				Flag = NORMAL;
+			else
+				Flag = TWIST;
+		}	
 	}
 	
-    return NORMAL;
+    return Flag;
 }
 
 // estimate a circle that best approximates the input points and return center and radius of the estimate circle
