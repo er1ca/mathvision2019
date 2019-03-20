@@ -1,0 +1,24 @@
+﻿Build started 2019-03-21 오전 1:58:45.
+     1>Project "C:\Users\er1ca\Documents\GitHub\src\feature_matching\feature_matching.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(364,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\OpenCV_v3.2.0_32bit\external\OpenCV\include /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt feature_matching.cpp
+         feature_matching.cpp
+     1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/core/mat.hpp(1926): warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+     1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+     1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+     1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/imgproc.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+     1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/imgproc.hpp(617): warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+     1>feature_matching.cpp(39): warning C4018: '<' : signed/unsigned mismatch
+     1>feature_matching.cpp(62): warning C4018: '<' : signed/unsigned mismatch
+     1>feature_matching.cpp(71): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\er1ca\Documents\GitHub\bin\feature_matching.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\OpenCV_v3.2.0_32bit\external\OpenCV\lib opencv_world320.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\er1ca\Documents\GitHub\bin\feature_matching.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\er1ca\Documents\GitHub\bin\feature_matching.lib" /MACHINE:X86 /SAFESEH Release\feature_matching.obj
+         Generating code
+         Finished generating code
+         feature_matching.vcxproj -> C:\Users\er1ca\Documents\GitHub\bin\feature_matching.exe
+     1>Done Building Project "C:\Users\er1ca\Documents\GitHub\src\feature_matching\feature_matching.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.34
