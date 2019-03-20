@@ -18,7 +18,7 @@ struct PolygonDemoParam
         compute_area = true;
         draw_line = true;
         check_ptInPoly = true;
-        check_homography = false;
+        check_homography = true;
         fit_line = false;
         fit_circle = false;
         fit_ellipse = false;

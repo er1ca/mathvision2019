@@ -42,7 +42,7 @@ void PolygonDemo::refreshWindow()
                 }
                 else
                 {
-                    circle(frame, m_test_pts[i], 2, Scalar(128, 128, 128), CV_FILLED);
+				    circle(frame, m_test_pts[i], 2, Scalar(128, 128, 128), CV_FILLED);
                 }
             }
         }
@@ -114,20 +114,45 @@ void PolygonDemo::refreshWindow()
 // return the area of polygon
 int PolygonDemo::polyArea(const std::vector<cv::Point>& vtx)
 {
-    return 0;
+	float S = 0;
+	for (int i = 0; i < vtx.size()-1; i++){
+		//printf("vtx[%d].x: %d\t", i, vtx[i].x);
+		//printf("vtx[%d].y: %d\r\n", i, vtx[i].y);
+		S += vtx[i].cross(vtx[i + 1]) / 2;
+	}
+	
+    return abs(S);
 }
 
 // return true if pt is interior point
 bool PolygonDemo::ptInPolygon(const std::vector<cv::Point>& vtx, Point pt)
 {
-    return false;
+	bool flag = false;
+	for (int i = 0; i < vtx.size() - 1; i++){
+		if (pt.cross(vtx[i]) < 0)
+			flag = true;
+		else
+			flag = false;
+	}
+    return flag;
 }
 
 // return homography type: NORMAL, CONCAVE, TWIST, REFLECTION, CONCAVE_REFLECTION
 int PolygonDemo::classifyHomography(const std::vector<cv::Point>& pts1, const std::vector<cv::Point>& pts2)
 {
-    if (pts1.size() != 4 || pts2.size() != 4) return -1;
-
+	//const std::vector<cv::Point>& crossV(0,0);
+	if (pts1.size() != 4 || pts2.size() != 4) return -1;
+	else {
+		for (int i = 0; i < 3; i++){
+			//crossV += pts2[i].cross(pts2[i + 1]);
+			//printf("pts1[%d].x: %d\t", i, pts1[i].x);
+			//printf("pts1[%d].y: %d\r\n", i, pts1[i].y);
+			//printf("pts2[%d].x: %d\t", i, pts2[i].x);
+			//printf("pts2[%d].y: %d\r\n", i, pts2[i].y);
+			//printf("%d\r\n", crossV);
+		}
+	}
+	
     return NORMAL;
 }
 
