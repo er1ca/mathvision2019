@@ -116,11 +116,11 @@ int PolygonDemo::polyArea(const std::vector<cv::Point>& vtx)
 {
 	float S = 0;
 	for (int i = 0; i < vtx.size()-1; i++){
-		//printf("vtx[%d].x: %d\t", i, vtx[i].x);
-		//printf("vtx[%d].y: %d\r\n", i, vtx[i].y);
 		S += vtx[i].cross(vtx[i + 1]) / 2;
 	}
-	
+	for (int i = 0; i < vtx.size(); i++){
+		printf("vtx[%d]=(%d, %d)\r\n", i, vtx[i].x, vtx[i].y);
+	}
     return abs(S);
 }
 
@@ -142,49 +142,41 @@ int PolygonDemo::classifyHomography(const std::vector<cv::Point>& pts1, const st
 {
 	int Flag = 0;
 	int nMinus = 0;
-	std::vector<cv::Point>& v();
-
-	if (pts1.size() != 4 || pts2.size() != 4) return -1;
-	else {
-		Point v[4];
-		int c[4];
-		for (int i = 0; i < 4; i++){
-			if (i == 3){
-				v[i].x = pts2[3].x - pts2[0].x;
-				v[i].y = pts2[3].y - pts2[0].y;
-			}
-			else{
-				v[i].x = pts2[i + 1].x - pts2[i].x;
-				v[i].y = pts2[i + 1].y - pts2[i].y;
-			}
-		}
-		for (int i = 0; i < 4; i++){
-			if (i == 3){
-				c[i] = v[3].cross(v[0])*0.01;
-			}
-			else{
-				c[i] = v[i].cross(v[i + 1])*0.01;
-			}
-
-			if (c[i] < 0) nMinus++;
-			printf("c[%d]=%d\r\n",i,c[i]);
-		}
-		
-		if (nMinus == 1)
-			Flag = CONCAVE_REFLECTION;
-		else if (nMinus == 3)
-			Flag = CONCAVE;
-		else {
-			if (c[0]>0 && c[1]>0) // CCW
-				Flag = REFLECTION;
-			else if (c[0]<0 && c[1]<0) //CW
-				Flag = NORMAL;
-			else
-				Flag = TWIST;
-		}	
-	}
+	int check = 1;
 	
-    return Flag;
+	if (pts1.size() != 4 || pts2.size() != 4) return -1;
+	Point v[2]; //vector
+	int c[4];
+	for (int i = 0; i < 4; i++){
+		//next point index
+		int start = i - 1; if (start < 0) start = 3;
+		int end = i + 1; if (end > 3) end = 0;
+
+		//define vectors for every points
+		v[0] = pts2[i] - pts2[start];
+		v[1] = pts2[i] - pts2[end];
+		//printf("%d , %d\r\n", v[0],v[1]);
+		
+		//calculate cross prodoct for every vectors
+		c[i] = v[0].cross(v[1]);
+		printf("c[%d] : %d\r\n", i, c[i]);
+
+		if (c[i] < 0) nMinus++;
+		
+		check = check * (c[i]/100);
+	}
+	printf("nMinus : %d, check : %d\r\n", nMinus, check);
+
+	//check rectangle types
+	if (nMinus == 3) Flag = CONCAVE_REFLECTION;
+	if (nMinus == 1) Flag = CONCAVE;
+	if (nMinus == 4) Flag = REFLECTION;
+	if (nMinus == 0) Flag = NORMAL;
+	if (nMinus == 2) Flag = TWIST; 
+		
+	printf("Flag : %d", Flag);
+		
+	return Flag;
 }
 
 // estimate a circle that best approximates the input points and return center and radius of the estimate circle
