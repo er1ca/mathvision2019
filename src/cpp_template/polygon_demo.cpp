@@ -114,11 +114,20 @@ void PolygonDemo::refreshWindow()
 // return the area of polygon
 int PolygonDemo::polyArea(const std::vector<cv::Point>& vtx)
 {
-	float S = 0;
-	for (int i = 0; i < vtx.size()-1; i++){
-		S += vtx[i].cross(vtx[i + 1]) / 2;
+	int S = 0;
+	int num = vtx.size();
+	Point v[2];
+	for (int i = 0; i < num-2; i++){
+		//next point index
+		int i2 = i + 1; 
+		int i3 = i + 2; 
+
+		//define vectors for every points
+		v[0] = vtx[i] - vtx[i2];
+		v[1] = vtx[i2] - vtx[i3];
+		S += v[0].cross(v[1]) / 2;
 	}
-	for (int i = 0; i < vtx.size(); i++){
+	for (int i = 0; i < num; i++){
 		printf("vtx[%d]=(%d, %d)\r\n", i, vtx[i].x, vtx[i].y);
 	}
     return abs(S);

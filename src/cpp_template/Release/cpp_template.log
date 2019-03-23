@@ -1,4 +1,4 @@
-﻿Build started 2019-03-23 오전 9:17:20.
+﻿Build started 2019-03-23 오전 9:55:03.
      1>Project "C:\Users\er1ca\Documents\GitHub\src\cpp_template\cpp_template.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(364,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
      1>ClCompile:
@@ -9,12 +9,10 @@
      1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
      1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/imgproc.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
      1>C:\OpenCV_v3.2.0_32bit\external\OpenCV\include\opencv2/imgproc.hpp(617): warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
-     1>polygon_demo.cpp(118): warning C4018: '<' : signed/unsigned mismatch
-     1>polygon_demo.cpp(119): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
-     1>polygon_demo.cpp(121): warning C4018: '<' : signed/unsigned mismatch
-     1>polygon_demo.cpp(124): warning C4244: 'return' : conversion from 'float' to 'int', possible loss of data
-     1>polygon_demo.cpp(131): warning C4018: '<' : signed/unsigned mismatch
-     1>polygon_demo.cpp(161): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>polygon_demo.cpp(128): warning C4244: '+=' : conversion from 'double' to 'int', possible loss of data
+     1>polygon_demo.cpp(130): warning C4018: '<' : signed/unsigned mismatch
+     1>polygon_demo.cpp(140): warning C4018: '<' : signed/unsigned mismatch
+     1>polygon_demo.cpp(170): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\OpenCV_v3.2.0_32bit\bin\cpp_template.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\OpenCV_v3.2.0_32bit\external\OpenCV\lib opencv_world320.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\OpenCV_v3.2.0_32bit\bin\cpp_template.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\OpenCV_v3.2.0_32bit\bin\cpp_template.lib" /MACHINE:X86 /SAFESEH Release\polygon_demo.obj
          Release\cpp_template.obj
@@ -25,4 +23,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.64
+Time Elapsed 00:00:02.25
