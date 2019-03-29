@@ -21,7 +21,7 @@ struct PolygonDemoParam
         check_homography = false;
         fit_line = false;
         fit_circle = false;
-        fit_ellipse = false;
+        fit_ellipse = true;
     }
 };
 
@@ -45,7 +45,7 @@ public:
 
     bool fitLine(const std::vector<cv::Point>& pts, cv::Point2d& center, double& radius);
     bool fitCircle(const std::vector<cv::Point>& pts, cv::Point2d& center, double& radius);
-    bool fitEllipse(const std::vector<cv::Point>& pts, cv::Point2d& m, cv::Point2d& v);
+    bool fitEllipse(const std::vector<cv::Point>& pts, cv::Point2d& m, cv::Point2d& v, double& theta);
 
 protected:
     bool m_data_ready;

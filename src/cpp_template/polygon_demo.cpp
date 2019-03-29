@@ -1,5 +1,7 @@
 #include "polygon_demo.hpp"
 #include "opencv2/imgproc.hpp"
+#include "iostream"
+#include "stdlib.h"
 
 using namespace std;
 using namespace cv;
@@ -106,6 +108,19 @@ void PolygonDemo::refreshWindow()
                 circle(frame, center, 2, Scalar(0, 255, 0), CV_FILLED);
             }
         }
+		// fit Ellipse
+		if (m_param.fit_ellipse)
+		{
+			Point2d  m;
+			Point2d  v;
+			double theta;
+			bool ok = fitEllipse(m_data_pts, m, v, theta);
+
+			if (ok){
+				// size vx,vy? 
+				ellipse(frame, m, Size((int)v.x,(int)v.y), theta, 0, 360, Scalar(0, 255, 0), 1, 8);
+			}
+		}
     }
 
     imshow("PolygonDemo", frame);
@@ -127,9 +142,11 @@ int PolygonDemo::polyArea(const std::vector<cv::Point>& vtx)
 		v[1] = vtx[i2] - vtx[i3];
 		S += v[0].cross(v[1]) / 2;
 	}
+	/*
 	for (int i = 0; i < num; i++){
 		printf("vtx[%d]=(%d, %d)\r\n", i, vtx[i].x, vtx[i].y);
 	}
+	*/
     return abs(S);
 }
 
@@ -168,7 +185,7 @@ int PolygonDemo::classifyHomography(const std::vector<cv::Point>& pts1, const st
 		
 		//calculate cross prodoct for every vectors
 		c[i] = v[0].cross(v[1]);
-		printf("c[%d] : %d\r\n", i, c[i]);
+		//printf("c[%d] : %d\r\n", i, c[i]);
 
 		if (c[i] < 0) nMinus++;
 		
@@ -188,13 +205,116 @@ int PolygonDemo::classifyHomography(const std::vector<cv::Point>& pts1, const st
 	return Flag;
 }
 
+
 // estimate a circle that best approximates the input points and return center and radius of the estimate circle
 bool PolygonDemo::fitCircle(const std::vector<cv::Point>& pts, cv::Point2d& center, double& radius)
 {
-    int n = (int)pts.size();
-    if (n < 3) return false;
+	int n = (int)pts.size();
+	if (n < 3) return false;
+	Mat J = Mat::ones(n, 3, CV_64F);
+	Mat Y = Mat::ones(n, 1, CV_64F);
+	Mat X = Mat::ones(3, 1, CV_64F);
 
-    return false;
+	for (int i = 0; i < n; i ++){
+		double x = pts[i].x;
+		double y = pts[i].y;
+		
+		J.at<double>(i, 0) = -2 * x;
+		J.at<double>(i, 1) = -2 * y;
+		//J.at<double>(i, 2) = 1;
+		Y.at<double>(i, 0) = -pow(x, 2) - pow(y, 2);
+	}
+	//cout << J << endl;
+
+	
+	/*
+	Mat W, U, Vt;
+	SVD::compute(J, W, U, Vt, SVD::FULL_UV);
+	cout << W << endl; // Singular value
+	*/
+	
+	//cout << J.t() << endl;
+	Mat pseudoInvJ;
+	invert(J, pseudoInvJ, DECOMP_SVD);;
+	//cout << pseudoInvJ << endl;
+	X = pseudoInvJ*Y;
+	//cout << X << endl;
+
+	double a = X.at<double>(0, 0);
+	double b = X.at<double>(1, 0);
+	double c = X.at<double>(2, 0);
+
+	center.x = a;
+	center.y = b;
+	radius = sqrt(pow(a,2) + pow(b,2) - c);
+	
+	printf("center (%d, %d) \n", center.x, center.y);
+	printf("radius : %d \n", radius);
+
+	cout << "JX : \n" << J*X << endl;
+	cout << "Y : \n" << Y << endl;
+
+	return true;
+}
+
+// estimate a ellipse that best approximates the input points and return center and radius of the estimate circle
+bool PolygonDemo::fitEllipse(const std::vector<cv::Point>& pts, cv::Point2d& m, cv::Point2d& v, double& theta)
+{
+	int n = (int)pts.size();
+	if (n < 3) return false;
+
+	Mat J = Mat::ones(n, 6, CV_64F);
+	Mat X = Mat::ones(6, 1, CV_64F);
+	
+	for (int i = 0; i < pts.size(); i++) 
+	{
+		double x = pts[i].x;
+		double y = pts[i].y;
+
+		J.at<double>(i, 0) = pow(x,2);
+		J.at<double>(i, 1) = x*y;
+		J.at<double>(i, 2) = pow(y,2);
+		J.at<double>(i, 3) = x;
+		J.at<double>(i, 4) = y;
+		J.at<double>(i, 5) = 1;
+	}
+
+	Mat W, U, Vt, svd;
+	SVD::compute(J, W, U, Vt, SVD::FULL_UV);
+	cout << W << endl; // Singular value
+
+	transpose(Vt, svd);
+	
+	for (int i = 0; i < 6; i++)	
+		X.at<double>(i, 0) = svd.at<double>(i, 5);
+	//cout << X << endl;
+	
+
+	double a = X.at<double>(0, 0);
+	double b = X.at<double>(1, 0);
+	double c = X.at<double>(2, 0);
+	double d = X.at<double>(3, 0);
+	double e = X.at<double>(4, 0);
+	double f = X.at<double>(5, 0);
+
+	theta = atan2(b, a - c) / 2 ; 
+
+	//center x, y
+	m.x = (2 * c * d - b * e) / (pow(b, 2) - 4 * a * c);
+	m.y = (2 * a * e - b * d) / (pow(b, 2) - 4 * a * c);
+	cout << "m : " << m << endl;
+
+	//w = v.x, h = v.y
+	v.x = sqrt((a * pow(m.x, 2) + b * m.x * m.y + c * pow(m.y, 2) - f) 
+		/ (a * pow(cos(theta), 2) + b * cos(theta) * sin(theta) + c * pow(sin(theta), 2)));
+	v.y = sqrt((a * pow(m.x, 2) + b * m.x * m.y + c * pow(m.y, 2) - f) 
+		/ (a * pow(sin(theta), 2) - b * cos(theta) * sin(theta) + c * pow(cos(theta), 2)));
+	cout << "v : " << v << endl;
+	theta *= 180 / 3.14;
+
+	cout << "JX : \n" << J*X << endl;
+
+	return true;
 }
 
 void PolygonDemo::drawPolygon(Mat& frame, const std::vector<cv::Point>& vtx, bool closed)
