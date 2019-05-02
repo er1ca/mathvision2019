@@ -15,13 +15,13 @@ struct PolygonDemoParam
 
     PolygonDemoParam()
     {
-        compute_area = true;
+        compute_area = false;
         draw_line = true;
-        check_ptInPoly = true;
+        check_ptInPoly = false;
         check_homography = false;
-        fit_line = false;
+        fit_line = true;
         fit_circle = false;
-        fit_ellipse = true;
+        fit_ellipse = false;
     }
 };
 
@@ -46,6 +46,10 @@ public:
     bool fitLine(const std::vector<cv::Point>& pts, cv::Point2d& center, double& radius);
     bool fitCircle(const std::vector<cv::Point>& pts, cv::Point2d& center, double& radius);
     bool fitEllipse(const std::vector<cv::Point>& pts, cv::Point2d& m, cv::Point2d& v, double& theta);
+
+	bool drawLine(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2);
+	bool drawLine_SVD(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2);
+	bool drawLine_CauchyWeigtedLS(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2, bool flag, cv::Mat& residual, int iteration);
 
 protected:
     bool m_data_ready;

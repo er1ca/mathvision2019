@@ -121,6 +121,40 @@ void PolygonDemo::refreshWindow()
 				ellipse(frame, m, Size((int)v.x,(int)v.y), theta, 0, 360, Scalar(0, 255, 0), 1, 8);
 			}
 		}
+		// HW#9 draw Line
+		if (m_param.draw_line)
+		{
+			Point2d point1;
+			Point2d point2;
+			
+			String fx1 = "y = ax + b";
+			putText(frame, fx1, Point(15, 35), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 255, 0), 1);
+			drawLine(m_data_pts, point1, point2);
+			line(frame, point1, point2, Scalar(0, 255, 0));
+			
+			String fx2 = "ax +by + c = 0";
+			putText(frame, fx2, Point(15, 55), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 0, 255), 1);
+			drawLine_SVD(m_data_pts, point1, point2);
+			line(frame, point1, point2, Scalar(0, 0, 255));
+		}
+		// HW#10 fit Line
+		if (m_param.fit_line)
+		{
+			Point2d point1;
+			Point2d point2;
+			Mat residual = Mat::zeros(m_data_pts.size(), 1, CV_32FC1);
+			String fx1 = "Cauchy Weighted LS y = ax + b";
+			putText(frame, fx1, Point(15, 75), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 255, 255), 1);
+			bool flag = true;
+			//int iteration = 0 
+			for (int i = 0; i < 10; i++){
+				drawLine_CauchyWeigtedLS(m_data_pts, point1, point2, flag, residual, i);
+				line(frame, point1, point2, Scalar(255, 0, 255));
+				cout << i << endl;
+			}
+			
+		}
+
     }
 
     imshow("PolygonDemo", frame);
@@ -315,6 +349,111 @@ bool PolygonDemo::fitEllipse(const std::vector<cv::Point>& pts, cv::Point2d& m, 
 	cout << "JX : \n" << J*X << endl;
 
 	return true;
+}
+// HW#9 draw Line
+bool PolygonDemo::drawLine(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2)
+{
+	int n = (int)pts.size();
+	if (n < 2) return false;
+
+	Mat J = Mat::zeros(n, 2, CV_32FC1);
+	Mat X = Mat::zeros(2, 1, CV_32FC1);
+	Mat Y = Mat::zeros(n, 1, CV_32FC1);
+	Mat Jpinv;
+
+	for (int i = 0; i < n; i++){
+		J.at<float>(i, 0) = pts[i].x;
+		J.at<float>(i, 1) = 1;
+		Y.at<float>(i, 0) = pts[i].y;
+	}
+
+	Mat d_svd, u, svd_t, svd;
+	SVD::compute(J, d_svd, u, svd_t, SVD::FULL_UV);
+	invert(J, Jpinv, DECOMP_SVD);
+	X = Jpinv*Y;
+
+	point1.x = 0; 
+	point2.x = 640;
+	point1.y = X.at<float>(0, 0)*point1.x + X.at<float>(1, 0);
+	point2.y = X.at<float>(0, 0)*point2.x + X.at<float>(1, 0);
+	return true;
+
+}
+// HW#9 draw Line
+bool PolygonDemo::drawLine_SVD(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2)
+{
+	int n = (int)pts.size();
+	//if (n < 2) return false;
+
+	Mat A = Mat::zeros(n, 3, CV_32FC1); 
+	Mat X = Mat::zeros(3, 1, CV_32FC1);
+	Mat pinvA;
+
+	for (int i = 0; i < n; i++){
+		A.at<float>(i, 0) = pts[i].x;
+		A.at<float>(i, 1) = pts[i].y;
+		A.at<float>(i, 2) = 1;  
+	}
+
+	Mat d_svd, u, svd_t, svd;
+	SVD::compute(A, d_svd, u, svd_t, SVD::FULL_UV);
+	transpose(svd_t, svd);
+	for (int i = 0; i < 3; i++){
+		X.at<float>(i, 0) = svd.at<float>(i, 2);
+	}
+
+	point1.x = 0;
+	point2.x = 640;
+
+	point1.y = -(X.at<float>(0, 0) / X.at<float>(1, 0))*point1.x - (X.at<float>(2, 0) / X.at<float>(1, 0));
+	point2.y = -(X.at<float>(0, 0) / X.at<float>(1, 0))*point2.x - (X.at<float>(2, 0) / X.at<float>(1, 0));
+	
+	return true;
+}
+
+// HW#10 fit Line
+bool PolygonDemo::drawLine_CauchyWeigtedLS(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2, bool flag, cv::Mat& residual, int iteration)
+{
+	int n = (int)pts.size();
+	Mat A = Mat::zeros(n, 2, CV_32FC1); // points
+	Mat X = Mat::zeros(n, 1, CV_32FC1); // 
+	//Mat Y = Mat::zeros(n, 1, CV_32FC1);
+	Mat p = Mat::zeros(2, 1, CV_32FC1); // param
+	Mat W = Mat::zeros(n, n, CV_32FC1); // cauchy weights
+	Mat pinvA;
+
+	
+	//initialization at iteration 0
+	if (iteration == 0) {
+		for (int i = 0; i < n; i++){
+			A.at<float>(i, 0) = pts[i].x;
+			A.at<float>(i, 1) = 1;
+			X.at<float>(i, 0) = pts[i].y;
+		}
+		invert(A, pinvA, DECOMP_SVD);
+		X = pinvA * X;
+		cout << residual << endl;
+	}
+	else{
+		for (int i = 0; i < n; i++){
+			A.at<float>(i, 0) = pts[i].x;
+			A.at<float>(i, 1) = 1;
+			X.at<float>(i, 0) = pts[i].y;
+			W.at<float>(i, i) = 1 / (residual.at<float>(i, 0) / 1.3998 + 1); //Cauchy weight function 
+		}
+		// robust parameter estimation 
+	}
+	p = (A.t() * W * A).inv(1) * A.t() * W * X;
+	residual = A*p - X;
+	point1.x = 0;
+	point2.x = 640;
+
+	point1.y = p.at<float>(0, 0) * point1.x + p.at<float>(1, 0);
+	point2.y = p.at<float>(0, 0) * point2.x + p.at<float>(1, 0);
+
+	return true; 
+
+
 }
 
 void PolygonDemo::drawPolygon(Mat& frame, const std::vector<cv::Point>& vtx, bool closed)
