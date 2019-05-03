@@ -130,12 +130,12 @@ void PolygonDemo::refreshWindow()
 			String fx1 = "y = ax + b";
 			putText(frame, fx1, Point(15, 35), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 255, 0), 1);
 			drawLine(m_data_pts, point1, point2);
-			line(frame, point1, point2, Scalar(0, 255, 0));
+			line(frame, point1, point2, Scalar(0, 255, 0),3);
 			
 			String fx2 = "ax +by + c = 0";
-			putText(frame, fx2, Point(15, 55), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 0, 255), 1);
+			putText(frame, fx2, Point(15, 55), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 0), 1);
 			drawLine_SVD(m_data_pts, point1, point2);
-			line(frame, point1, point2, Scalar(0, 0, 255));
+			line(frame, point1, point2, Scalar(255, 255, 0),2);
 		}
 		// HW#10 fit Line
 		if (m_param.fit_line)
@@ -149,10 +149,11 @@ void PolygonDemo::refreshWindow()
 			//int iteration = 0 
 			for (int i = 0; i < 10; i++){
 				drawLine_CauchyWeigtedLS(m_data_pts, point1, point2, flag, residual, i);
-				line(frame, point1, point2, Scalar(255, 0, 255));
+				line(frame, point1, point2, Scalar(0, 50, 50+20*i));
 				cout << i << endl;
 			}
-			
+			drawLine_CauchyWeigtedLS(m_data_pts, point1, point2, flag, residual, 10);
+			line(frame, point1, point2, Scalar(50, 0, 255),2);
 		}
 
     }
@@ -431,7 +432,7 @@ bool PolygonDemo::drawLine_CauchyWeigtedLS(const std::vector<cv::Point>& pts, cv
 			X.at<float>(i, 0) = pts[i].y;
 		}
 		invert(A, pinvA, DECOMP_SVD);
-		X = pinvA * X;
+		p = pinvA * X;
 		cout << residual << endl;
 	}
 	else{
@@ -441,9 +442,10 @@ bool PolygonDemo::drawLine_CauchyWeigtedLS(const std::vector<cv::Point>& pts, cv
 			X.at<float>(i, 0) = pts[i].y;
 			W.at<float>(i, i) = 1 / (residual.at<float>(i, 0) / 1.3998 + 1); //Cauchy weight function 
 		}
-		// robust parameter estimation 
+		//||W^1/2(Ap-x)||^2을 최소화시키는 해 
+		p = (A.t() * W * A).inv(1) * A.t() * W * X;
 	}
-	p = (A.t() * W * A).inv(1) * A.t() * W * X;
+	
 	residual = A*p - X;
 	point1.x = 0;
 	point2.x = 640;
