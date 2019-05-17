@@ -12,16 +12,18 @@ struct PolygonDemoParam
     bool fit_line;
     bool fit_circle;
     bool fit_ellipse;
+	bool fit_RANSAC;
 
     PolygonDemoParam()
     {
         compute_area = false;
-        draw_line = true;
+        draw_line = false;
         check_ptInPoly = false;
         check_homography = false;
-        fit_line = true;
+		fit_line = false;
         fit_circle = false;
         fit_ellipse = false;
+		fit_RANSAC = true;
     }
 };
 
@@ -50,6 +52,9 @@ public:
 	bool drawLine(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2);
 	bool drawLine_SVD(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2);
 	bool drawLine_CauchyWeigtedLS(const std::vector<cv::Point>& pts, cv::Point2d& point1, cv::Point2d& point2, bool flag, cv::Mat& residual, int iteration);
+
+	bool drawLine_RANSAC(const std::vector<cv::Point> & pts, cv::Point2d& point1, cv::Point2d& point2);
+	bool drawLine_RANSAC_1(const std::vector<cv::Point> & pts, cv::Point2d& point1, cv::Point2d& point2);
 
 protected:
     bool m_data_ready;
