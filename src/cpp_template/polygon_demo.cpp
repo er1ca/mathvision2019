@@ -172,9 +172,9 @@ void PolygonDemo::refreshWindow()
 			*/
 			
 			String fx2 = "ax +by + c = 0";
-			putText(frame, fx2, Point(15, 55), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0, 0, 255), 1);
+			putText(frame, fx2, Point(15, 25), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(50, 0, 255), 1);
 			drawLine_RANSAC_1(m_data_pts, point1, point2);
-			line(frame, point1, point2, Scalar(0, 0, 255), 1);
+			line(frame, point1, point2, Scalar(50, 0, 255), 1);
 		}
 
     }
@@ -489,7 +489,7 @@ bool PolygonDemo::drawLine_RANSAC(const std::vector<cv::Point> & pts, cv::Point2
 	float th = 100.0;
 	int iteration = 6;
 
-	cout << iteration << endl;
+	//cout << iteration << endl;
 	
 	Mat model = Mat::zeros(5, 3, CV_32FC1); // saved model cnt, a, b 
 	Mat X = Mat::zeros(n, 2, CV_32FC1); // x values
@@ -520,7 +520,8 @@ bool PolygonDemo::drawLine_RANSAC(const std::vector<cv::Point> & pts, cv::Point2
 			S_x.at<float>(i, 0) = X.at<float>(ran[i], 0);
 			S_x.at<float>(i, 1) = 1;
 			S_y.at<float>(i, 1) = Y.at<float>(ran[i], 0);
-			//cout << S << endl;
+			cout << S_x << endl;
+			cout << S_y << endl;
 		}
 
 		invert(S_x, pinvS, DECOMP_SVD);
@@ -574,83 +575,97 @@ bool PolygonDemo::drawLine_RANSAC_1(const std::vector<cv::Point> & pts, cv::Poin
 	if (n < 2) return false;
 
 	const int s = 2;
-	float th = 100.0;
+	float th = 20.0;
 	int iteration = 6;
 
-	cout << iteration << endl;
-	
-	Mat model = Mat::zeros(iteration, 4, CV_32FC1); // saved model cnt, a, b, c
-
+	float a, b, c = 0;
 	Mat A = Mat::zeros(n, 3, CV_32FC1); // points
-	Mat P = Mat::zeros(3, 1, CV_32FC1); // param a,b,c
 	
-	Mat S = Mat::zeros(s, 3, CV_32FC1); // Sample points
-	//vector<Point> sampleV{};
-	Mat sampleV = Mat::zeros(1, 2, CV_32FC1);
-
-	Mat distance = Mat::zeros(n, 1, CV_32FC1);
-	Mat pinvA;
-
-
 	//Mat A
 	for (int i = 0; i < n; i++){
-	A.at<float>(i, 0) = pts[i].x;
-	A.at<float>(i, 1) = pts[i].y;
-	A.at<float>(i, 2) = 1;
+		A.at<float>(i, 0) = pts[i].x;
+		A.at<float>(i, 1) = pts[i].y;
+		A.at<float>(i, 2) = 1;
 	}
 	//cout << A << endl;
+	
+	Mat model = Mat::zeros(iteration, 4, CV_32FC1); // saved model cnt, a, b, c
+	Mat best_model = Mat::zeros(1, 4, CV_32FC1); // best model cnt, a, b, c
 
-	//Random Sample
-	int ran[s];
-	for (int i = 0; i < s; i++){
-		int tmp = (rand() % n);
-		for (int k = 0; k < i; k++) if (ran[k] == tmp) i--;
-		cout << ran[i] << endl;
+	for (int i = 0; i < iteration; i++){
+		cout << i << endl;
+		Mat P = Mat::zeros(3, 1, CV_32FC1); // param a,b,c
+		Mat S = Mat::zeros(s, 3, CV_32FC1); // Sample points
+		Mat sampleV = Mat::zeros(1, 2, CV_32FC1);
+		Mat residual = Mat::zeros(n, 1, CV_32FC1);
+		Mat pinvA;
+
+		//Random Sample
+		int ran[s];
+		for (int i = 0; i < s; i++){
+			int tmp = (rand() % n);
+			cout << tmp << endl;
+			for (int k = 0; k < i; k++) if (ran[k] == tmp) tmp = (rand()%n);
+			ran[i] = tmp;
+		}
+		cout << ran << endl;
+		for (int i = 0; i < s; i++){
+			S.at<float>(i, 0) = A.at<float>(ran[i], 0);
+			S.at<float>(i, 1) = A.at<float>(ran[i], 1);
+			S.at<float>(i, 2) = 1;
+			//cout << S << endl;
+		}
+
+		//get param a,b,c
+		Mat d_svd, u, svd_t, svd;
+		SVD::compute(S, d_svd, u, svd_t, SVD::FULL_UV);
+		transpose(svd_t, svd);
+
+		//set param for Mat X
+		for (int i = 0; i < 3; i++){
+			P.at<float>(i, 0) = svd.at<float>(i, 2);
+		}
+		//cout << P << endl; //a, b, c
+
+		a = P.at<float>(0, 0);
+		b = P.at<float>(0, 1);
+		c = P.at<float>(0, 2);
+		//get residual
+		int cnt = 0;
+		for (int i = 0; i < n; i++){
+			residual.at<float>(i, 0) = abs((a * A.at<float>(i, 0) + b * A.at<float>(i, 1) + c) / sqrt(a*a + b*b));
+			
+			if (residual.at<float>(i, 0) < th){
+				model.at<float>(i, 0) = cnt++;
+				model.at<float>(i, 1) = a;
+				model.at<float>(i, 2) = b;
+				model.at<float>(i, 3) = c;
+			}
+		}
+		cout << residual << endl;
 	}
-	for (int i = 0; i < s; i++){
-		S.at<float>(i, 0) = A.at<float>(ran[i], 0);
-		S.at<float>(i, 1) = A.at<float>(ran[i], 1);
-		S.at<float>(i, 2) = 1;
-		//cout << S << endl;
-	}
 
-	//sample points ; p1p2 vector
-	//x2-x1
-	sampleV.at<float>(0, 1) = A.at<float>(ran[1], 0) - A.at<float>(ran[0], 0);
-	//y2-y1
-	sampleV.at<float>(1, 1) = A.at<float>(ran[1], 1) - A.at<float>(ran[0], 1);
-
-	cout << sampleV << endl;
-
-	//set every points for vectors 
-	//for (int i = 0; )
-
-	//get param a,b,c
-	Mat d_svd, u, svd_t, svd;
-	SVD::compute(S, d_svd, u, svd_t, SVD::FULL_UV);
-	transpose(svd_t, svd);
-
-	//set param for Mat X
-	for (int i = 0; i < 3; i++){
-		P.at<float>(i, 0) = svd.at<float>(i, 2);
-	}
-	cout << P << endl; //a, b, c
-
-
-	int cnt = 0;
-	for (int i = 0; i < n; i++){
-		if (distance.at<float>(i, 0) < th){
-			cnt++;
-			cout << cnt << endl;
+	int cur_max = 0;
+	int max_index = 0;
+	for (int i = 0; i < iteration; i++){
+		if (model.at<float>(i, 0)>cur_max){
+			max_index = i;
+			cur_max = model.at<float>(i, 0);
 		}
 	}
-	cout << distance << endl;
+
+	a = model.at<float>(max_index, 1);
+	b = model.at<float>(max_index, 2);
+	c = model.at<float>(max_index, 3);
+
+	//cout << cnt << endl;
+	//cout << residual << endl;
 
 	point1.x = 0;
 	point2.x = 640;
 
-	point1.y = -(P.at<float>(0, 0) / P.at<float>(1, 0))*point1.x - (P.at<float>(2, 0) / P.at<float>(1, 0));
-	point2.y = -(P.at<float>(0, 0) / P.at<float>(1, 0))*point2.x - (P.at<float>(2, 0) / P.at<float>(1, 0));
+	point1.y = -(a / b)*point1.x - (c / b);
+	point2.y = -(a / b)*point2.x - (c / b);
 
 	return true;
 }
